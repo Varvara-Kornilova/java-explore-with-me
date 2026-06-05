@@ -13,7 +13,7 @@ public class StatsClient {
     private final org.springframework.web.client.RestTemplate restTemplate;
 
     @Autowired
-    public StatsClient(@Value("${stats-server.url}") String serverUrl,
+    public StatsClient(@Value("${stats-server.url:http://localhost:9090}") String serverUrl,
                        RestTemplateBuilder builder) {
         this.restTemplate = builder
                 .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))

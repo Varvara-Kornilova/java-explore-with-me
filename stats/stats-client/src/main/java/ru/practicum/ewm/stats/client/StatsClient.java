@@ -5,12 +5,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.ewm.stats.dto.EndpointHitDto;
 
+
 @Service
 public class StatsClient {
-    private final org.springframework.web.client.RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     @Autowired
     public StatsClient(@Value("${stats-server.url:http://localhost:9090}") String serverUrl,

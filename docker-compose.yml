@@ -34,5 +34,44 @@ services:
       timeout: 5s
       retries: 10
 
+  main-service:
+    build: ./main-service
+    container_name: main-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      main-db:
+        condition: service_healthy
+      stats-server:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5432/ewm-main
+      - SPRING_DATASOURCE_USERNAME=dbuser
+      - SPRING_DATASOURCE_PASSWORD=12345
+      - STATS_SERVER_URL=http://stats-server:9090
+      - TZ=Europe/Moscow
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  main-db:
+    image: postgres:16.1
+    container_name: main-db
+    environment:
+      - POSTGRES_DB=ewm-main
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=12345
+      - TZ=Europe/Moscow
+    volumes:
+      - main-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d ewm-main -U dbuser"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 volumes:
   stats-db-data:
+  main-db-data:

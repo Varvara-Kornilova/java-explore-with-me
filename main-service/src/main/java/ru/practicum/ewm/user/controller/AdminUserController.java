@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.user.dto.NewUserRequest;
 import ru.practicum.ewm.user.dto.UserDto;
@@ -15,6 +16,7 @@ import java.util.List;
 @RequestMapping("/admin/users")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class AdminUserController {
     private final UserService userService;
 

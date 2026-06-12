@@ -37,13 +37,12 @@ public class CompilationService {
         Compilation compilation = Compilation.builder()
                 .title(dto.getTitle())
                 .pinned(dto.getPinned() != null ? dto.getPinned() : false)
+                .events(new HashSet<>())
                 .build();
 
         if (dto.getEvents() != null && !dto.getEvents().isEmpty()) {
             List<Event> events = eventRepository.findAllByIdIn(new ArrayList<>(dto.getEvents()));
             compilation.setEvents(new HashSet<>(events));
-        } else {
-            compilation.setEvents(new HashSet<>()); // Важно: не null!
         }
 
         Compilation saved = compilationRepository.save(compilation);
@@ -63,7 +62,7 @@ public class CompilationService {
         }
         if (request.getEvents() != null) {
             if (request.getEvents().isEmpty()) {
-                compilation.setEvents(new HashSet<>()); // Важно: не null!
+                compilation.setEvents(new HashSet<>());
             } else {
                 List<Event> events = eventRepository.findAllByIdIn(new ArrayList<>(request.getEvents()));
                 compilation.setEvents(new HashSet<>(events));

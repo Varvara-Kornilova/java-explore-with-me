@@ -31,6 +31,7 @@ import ru.practicum.ewm.util.StateAction;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,9 +64,9 @@ public class EventService {
                 .orElseThrow(() -> new NotFoundException(
                         String.format("Category with id=%d was not found", dto.getCategory())));
 
-        LocalDateTime eventDate = LocalDateTime.parse(dto.getEventDate(), FORMATTER);
+        LocalDateTime eventDate = parseDateTime(dto.getEventDate(), "eventDate");
         if (eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException(
+            throw new BadRequestException(
                     "Field: eventDate. Error: должно содержать дату, которая еще не наступила. Value: " + dto.getEventDate());
         }
 
@@ -123,8 +124,8 @@ public class EventService {
                                                 String rangeEndStr, Integer from, Integer size) {
         log.debug("Admin: поиск событий");
         List<State> stateEnums = states != null ? states.stream().map(State::valueOf).toList() : null;
-        LocalDateTime rangeStart = rangeStartStr != null ? LocalDateTime.parse(rangeStartStr, FORMATTER) : null;
-        LocalDateTime rangeEnd = rangeEndStr != null ? LocalDateTime.parse(rangeEndStr, FORMATTER) : null;
+        LocalDateTime rangeStart = rangeStartStr != null ? parseDateTime(rangeStartStr, "rangeStart") : null;
+        LocalDateTime rangeEnd = rangeEndStr != null ? parseDateTime(rangeEndStr, "rangeEnd") : null;
 
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new BadRequestException("Incorrectly made request: rangeStart must be before rangeEnd");
@@ -163,10 +164,10 @@ public class EventService {
                                                HttpServletRequest request) {
         log.debug("Public: поиск событий");
         LocalDateTime rangeStart = rangeStartStr != null
-                ? LocalDateTime.parse(rangeStartStr, FORMATTER)
+                ? parseDateTime(rangeStartStr, "rangeStart")
                 : LocalDateTime.now();
         LocalDateTime rangeEnd = rangeEndStr != null
-                ? LocalDateTime.parse(rangeEndStr, FORMATTER)
+                ? parseDateTime(rangeEndStr, "rangeEnd")
                 : null;
 
         if (rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
@@ -178,7 +179,6 @@ public class EventService {
         List<Event> events = eventRepository.findAll(spec, pageable).getContent();
         Map<Long, Long> viewsMap = getViewsMap(events);
 
-        // Сохраняем хит в статистику
         saveHit(request);
 
         return events.stream()
@@ -216,9 +216,10 @@ public class EventService {
             event.setCategory(category);
         }
         if (request.getEventDate() != null) {
-            LocalDateTime newDate = LocalDateTime.parse(request.getEventDate(), FORMATTER);
+            LocalDateTime newDate = parseDateTime(request.getEventDate(), "eventDate");
             if (newDate.isBefore(LocalDateTime.now().plusHours(2))) {
-                throw new ConflictException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
+                throw new BadRequestException(
+                        "Field: eventDate. Error: должно содержать дату, которая еще не наступила. Value: " + request.getEventDate());
             }
             event.setEventDate(newDate);
         }
@@ -230,7 +231,7 @@ public class EventService {
         if (request.getRequestModeration() != null) event.setRequestModeration(request.getRequestModeration());
 
         if (request.getStateAction() != null) {
-            StateAction action = StateAction.valueOf(request.getStateAction());
+            StateAction action = parseStateAction(request.getStateAction());
             switch (action) {
                 case SEND_TO_REVIEW -> event.setState(State.PENDING);
                 case CANCEL_REVIEW -> event.setState(State.CANCELED);
@@ -249,9 +250,10 @@ public class EventService {
             event.setCategory(category);
         }
         if (request.getEventDate() != null) {
-            LocalDateTime newDate = LocalDateTime.parse(request.getEventDate(), FORMATTER);
+            LocalDateTime newDate = parseDateTime(request.getEventDate(), "eventDate");
             if (newDate.isBefore(LocalDateTime.now().plusHours(1))) {
-                throw new ConflictException("Field: eventDate. Error: дата должна быть не ранее чем за час от текущего момента");
+                throw new BadRequestException(
+                        "Field: eventDate. Error: дата должна быть не ранее чем за час от текущего момента. Value: " + request.getEventDate());
             }
             event.setEventDate(newDate);
         }
@@ -263,7 +265,7 @@ public class EventService {
         if (request.getRequestModeration() != null) event.setRequestModeration(request.getRequestModeration());
 
         if (request.getStateAction() != null) {
-            StateAction action = StateAction.valueOf(request.getStateAction());
+            StateAction action = parseStateAction(request.getStateAction());
             switch (action) {
                 case PUBLISH_EVENT -> {
                     if (event.getState() != State.PENDING) {
@@ -292,7 +294,6 @@ public class EventService {
         if (sort == EventSort.EVENT_DATE) {
             return PaginationUtil.of(from, size, Sort.by(Sort.Direction.ASC, "eventDate"));
         } else {
-            // VIEWS — сортировка будет выполнена после получения данных из статистики
             return PaginationUtil.of(from, size, Sort.by(Sort.Direction.DESC, "eventDate"));
         }
     }
@@ -348,6 +349,24 @@ public class EventService {
             statsClient.saveHit(hit);
         } catch (Exception e) {
             log.warn("Не удалось сохранить хит в статистику: {}", e.getMessage());
+        }
+    }
+
+    private LocalDateTime parseDateTime(String dateTimeStr, String fieldName) {
+        try {
+            return LocalDateTime.parse(dateTimeStr, FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new BadRequestException(
+                    String.format("Field: %s. Error: Incorrect date format. Value: %s", fieldName, dateTimeStr));
+        }
+    }
+
+    private StateAction parseStateAction(String stateActionStr) {
+        try {
+            return StateAction.valueOf(stateActionStr);
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException(
+                    String.format("Field: stateAction. Error: Unknown state action. Value: %s", stateActionStr));
         }
     }
 }

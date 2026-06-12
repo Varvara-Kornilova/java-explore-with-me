@@ -243,6 +243,27 @@ public class EventService {
     }
 
     private void applyAdminUpdate(Event event, UpdateEventAdminRequest request) {
+        if (request.getStateAction() != null) {
+            StateAction action = parseStateAction(request.getStateAction());
+            switch (action) {
+                case PUBLISH_EVENT -> {
+                    if (event.getState() != State.PENDING) {
+                        throw new ConflictException(
+                                "Cannot publish the event because it's not in the right state: " + event.getState());
+                    }
+                    event.setState(State.PUBLISHED);
+                    event.setPublishedOn(LocalDateTime.now());
+                }
+                case REJECT_EVENT -> {
+                    if (event.getState() == State.PUBLISHED) {
+                        throw new ConflictException(
+                                "Cannot reject the event because it's already published");
+                    }
+                    event.setState(State.CANCELED);
+                }
+            }
+        }
+
         if (request.getAnnotation() != null) event.setAnnotation(request.getAnnotation());
         if (request.getDescription() != null) event.setDescription(request.getDescription());
         if (request.getTitle() != null) event.setTitle(request.getTitle());
@@ -267,27 +288,6 @@ public class EventService {
         if (request.getPaid() != null) event.setPaid(request.getPaid());
         if (request.getParticipantLimit() != null) event.setParticipantLimit(request.getParticipantLimit());
         if (request.getRequestModeration() != null) event.setRequestModeration(request.getRequestModeration());
-
-        if (request.getStateAction() != null) {
-            StateAction action = parseStateAction(request.getStateAction());
-            switch (action) {
-                case PUBLISH_EVENT -> {
-                    if (event.getState() != State.PENDING) {
-                        throw new ConflictException(
-                                "Cannot publish the event because it's not in the right state: " + event.getState());
-                    }
-                    event.setState(State.PUBLISHED);
-                    event.setPublishedOn(LocalDateTime.now());
-                }
-                case REJECT_EVENT -> {
-                    if (event.getState() == State.PUBLISHED) {
-                        throw new ConflictException(
-                                "Cannot reject the event because it's already published");
-                    }
-                    event.setState(State.CANCELED);
-                }
-            }
-        }
     }
 
     private Pageable buildPageable(Integer from, Integer size, String sortStr) {

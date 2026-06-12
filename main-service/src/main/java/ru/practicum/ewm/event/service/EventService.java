@@ -32,7 +32,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -66,8 +65,7 @@ public class EventService {
                         String.format("Category with id=%d was not found", dto.getCategory())));
 
         LocalDateTime eventDate = parseDateTime(dto.getEventDate(), "eventDate");
-        LocalDateTime nowTruncated = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
-        if (eventDate.truncatedTo(ChronoUnit.MINUTES).isBefore(nowTruncated.plusHours(2))) {
+        if (eventDate.isBefore(LocalDateTime.now().plusHours(2).minusMinutes(1))) {
             throw new BadRequestException(
                     "Field: eventDate. Error: должно содержать дату, которая еще не наступила. Value: " + dto.getEventDate());
         }
@@ -219,8 +217,7 @@ public class EventService {
         }
         if (request.getEventDate() != null) {
             LocalDateTime newDate = parseDateTime(request.getEventDate(), "eventDate");
-            LocalDateTime nowTruncated = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
-            if (newDate.truncatedTo(ChronoUnit.MINUTES).isBefore(nowTruncated.plusHours(2))) {
+            if (newDate.isBefore(LocalDateTime.now().plusHours(2).minusMinutes(1))) {
                 throw new BadRequestException(
                         "Field: eventDate. Error: должно содержать дату, которая еще не наступила. Value: " + request.getEventDate());
             }
@@ -275,8 +272,7 @@ public class EventService {
         }
         if (request.getEventDate() != null) {
             LocalDateTime newDate = parseDateTime(request.getEventDate(), "eventDate");
-            LocalDateTime nowTruncated = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
-            if (newDate.truncatedTo(ChronoUnit.MINUTES).isBefore(nowTruncated.plusHours(1))) {
+            if (newDate.isBefore(LocalDateTime.now().plusHours(1).minusMinutes(1))) {
                 throw new BadRequestException(
                         "Field: eventDate. Error: дата должна быть не ранее чем за час от текущего момента. Value: " + request.getEventDate());
             }

@@ -16,6 +16,7 @@ import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.util.PaginationUtil;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -33,11 +34,16 @@ public class CompilationService {
     @Transactional
     public CompilationDto saveCompilation(NewCompilationDto dto) {
         log.debug("Создание подборки: title={}", dto.getTitle());
-        Compilation compilation = compilationMapper.toEntity(dto);
+        Compilation compilation = Compilation.builder()
+                .title(dto.getTitle())
+                .pinned(dto.getPinned() != null ? dto.getPinned() : false)
+                .build();
 
         if (dto.getEvents() != null && !dto.getEvents().isEmpty()) {
-            List<Event> events = eventRepository.findAllByIdIn(dto.getEvents().stream().toList());
+            List<Event> events = eventRepository.findAllByIdIn(new ArrayList<>(dto.getEvents()));
             compilation.setEvents(new HashSet<>(events));
+        } else {
+            compilation.setEvents(new HashSet<>()); // Важно: не null!
         }
 
         Compilation saved = compilationRepository.save(compilation);
@@ -57,9 +63,9 @@ public class CompilationService {
         }
         if (request.getEvents() != null) {
             if (request.getEvents().isEmpty()) {
-                compilation.setEvents(new HashSet<>());
+                compilation.setEvents(new HashSet<>()); // Важно: не null!
             } else {
-                List<Event> events = eventRepository.findAllByIdIn(request.getEvents().stream().toList());
+                List<Event> events = eventRepository.findAllByIdIn(new ArrayList<>(request.getEvents()));
                 compilation.setEvents(new HashSet<>(events));
             }
         }

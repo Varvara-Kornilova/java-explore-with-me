@@ -37,6 +37,7 @@ public class RequestService {
     @Transactional
     public ParticipationRequestDto addRequest(Long userId, Long eventId) {
         log.debug("Создание заявки: userId={}, eventId={}", userId, eventId);
+
         User requester = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(
                         String.format("User with id=%d was not found", userId)));
@@ -48,12 +49,15 @@ public class RequestService {
         if (event.getState() != State.PUBLISHED) {
             throw new ConflictException("Cannot participate in unpublished event");
         }
+
         if (event.getInitiator().getId().equals(userId)) {
             throw new ConflictException("Initiator cannot participate in their own event");
         }
+
         if (requestRepository.existsByEventIdAndRequesterId(eventId, userId)) {
             throw new ConflictException("Request already exists");
         }
+
         if (event.getParticipantLimit() != 0 && !event.getRequestModeration()) {
             long confirmed = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
             if (confirmed >= event.getParticipantLimit()) {

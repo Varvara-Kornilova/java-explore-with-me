@@ -65,7 +65,9 @@ public class EventService {
                         String.format("Category with id=%d was not found", dto.getCategory())));
 
         LocalDateTime eventDate = parseDateTime(dto.getEventDate(), "eventDate");
-        if (eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
+
+        LocalDateTime nowWithoutNanos = LocalDateTime.now().withNano(0);
+        if (eventDate.isBefore(nowWithoutNanos.plusHours(2))) {
             throw new BadRequestException(
                     "Field: eventDate. Error: должно содержать дату, которая еще не наступила. Value: " + dto.getEventDate());
         }
@@ -217,7 +219,8 @@ public class EventService {
         }
         if (request.getEventDate() != null) {
             LocalDateTime newDate = parseDateTime(request.getEventDate(), "eventDate");
-            if (newDate.isBefore(LocalDateTime.now().plusHours(2))) {
+            LocalDateTime nowWithoutNanos = LocalDateTime.now().withNano(0);
+            if (newDate.isBefore(nowWithoutNanos.plusHours(2))) {
                 throw new BadRequestException(
                         "Field: eventDate. Error: должно содержать дату, которая еще не наступила. Value: " + request.getEventDate());
             }
@@ -251,7 +254,8 @@ public class EventService {
         }
         if (request.getEventDate() != null) {
             LocalDateTime newDate = parseDateTime(request.getEventDate(), "eventDate");
-            if (newDate.isBefore(LocalDateTime.now().plusHours(1))) {
+            LocalDateTime nowWithoutNanos = LocalDateTime.now().withNano(0);
+            if (newDate.isBefore(nowWithoutNanos.plusHours(1))) {
                 throw new BadRequestException(
                         "Field: eventDate. Error: дата должна быть не ранее чем за час от текущего момента. Value: " + request.getEventDate());
             }

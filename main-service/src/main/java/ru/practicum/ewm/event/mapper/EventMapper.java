@@ -1,5 +1,6 @@
 package ru.practicum.ewm.event.mapper;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.model.Category;
@@ -13,17 +14,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Component
+@RequiredArgsConstructor
 public class EventMapper {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final CategoryMapper categoryMapper;
     private final UserMapper userMapper;
-
-    public EventMapper(CategoryMapper categoryMapper, UserMapper userMapper) {
-        this.categoryMapper = categoryMapper;
-        this.userMapper = userMapper;
-    }
 
     public EventFullDto toFullDto(Event event, Long views) {
         if (event == null) return null;

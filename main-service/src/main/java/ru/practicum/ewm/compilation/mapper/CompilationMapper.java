@@ -1,5 +1,6 @@
 package ru.practicum.ewm.compilation.mapper;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
 import ru.practicum.ewm.compilation.dto.NewCompilationDto;
@@ -13,13 +14,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class CompilationMapper {
 
     private final EventMapper eventMapper;
-
-    public CompilationMapper(EventMapper eventMapper) {
-        this.eventMapper = eventMapper;
-    }
 
     public CompilationDto toDto(Compilation compilation, Map<Long, Long> viewsMap) {
         if (compilation == null) return null;

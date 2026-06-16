@@ -3,7 +3,6 @@ package ru.practicum.ewm.event.repository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
 import ru.practicum.ewm.event.enums.State;
 import ru.practicum.ewm.event.model.Event;
 
@@ -17,7 +16,4 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     Optional<Event> findByIdAndInitiatorId(Long eventId, Long initiatorId);
 
     boolean existsByState(State state);
-
-    @Query("SELECT e FROM Event e WHERE e.id IN :ids")
-    List<Event> findAllByIdIn(List<Long> ids);
 }

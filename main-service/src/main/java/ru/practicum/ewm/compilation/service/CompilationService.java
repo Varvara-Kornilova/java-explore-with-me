@@ -41,7 +41,7 @@ public class CompilationService {
                 .build();
 
         if (dto.getEvents() != null && !dto.getEvents().isEmpty()) {
-            List<Event> events = eventRepository.findAllByIdIn(new ArrayList<>(dto.getEvents()));
+            List<Event> events = eventRepository.findAllById(dto.getEvents());
             compilation.setEvents(new HashSet<>(events));
         }
 
@@ -64,7 +64,7 @@ public class CompilationService {
             if (request.getEvents().isEmpty()) {
                 compilation.setEvents(new HashSet<>());
             } else {
-                List<Event> events = eventRepository.findAllByIdIn(new ArrayList<>(request.getEvents()));
+                List<Event> events = eventRepository.findAllById(request.getEvents());
                 compilation.setEvents(new HashSet<>(events));
             }
         }

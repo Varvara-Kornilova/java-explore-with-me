@@ -1,10 +1,7 @@
 package ru.practicum.ewm.request.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.request.enums.RequestStatus;
 import ru.practicum.ewm.user.model.User;
@@ -13,10 +10,12 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "requests")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"event", "requester"})
 public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

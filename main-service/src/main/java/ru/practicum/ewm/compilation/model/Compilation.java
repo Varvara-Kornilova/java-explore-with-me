@@ -1,10 +1,7 @@
 package ru.practicum.ewm.compilation.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.practicum.ewm.event.model.Event;
 
 import java.util.HashSet;
@@ -12,10 +9,12 @@ import java.util.Set;
 
 @Entity
 @Table(name = "compilations")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "events")
 public class Compilation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

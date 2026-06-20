@@ -133,3 +133,7 @@ docker-compose up --build -d
 Выполните в корневой директории проекта:
 ```bash
 mvn clean install
+```
+
+## Ссылка на Pull Request
+[feature_comments → main](https://github.com/Varvara-Kornilova/java-explore-with-me/pull/5)
